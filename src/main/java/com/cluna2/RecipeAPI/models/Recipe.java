@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.OptionalDouble;
 
 @Entity
 @Getter
@@ -46,7 +47,12 @@ public class Recipe {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "recipe_id", nullable = false)
-    private List<Review> reviews;
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double averageRating = 0.0;
 
     @Transient
     @JsonIgnore
@@ -79,6 +85,17 @@ public class Recipe {
                                                .toUriString());
         } catch (URISyntaxException e) {
             // exception should stop here.
+        }
+    }
+
+
+    public void updateAverageRating() {
+        if (reviews.size() == 0) {
+            return;
+        }
+        OptionalDouble optionalAverage = reviews.stream().mapToDouble(Review::getRating).average();
+        if (optionalAverage.isPresent()) {
+            averageRating = optionalAverage.getAsDouble();
         }
     }
 }

@@ -89,4 +89,15 @@ public class RecipeService {
                             "Or maybe you meant to POST a recipe not PATCH one.");
         }
     }
+
+    public List<Recipe> getRecipesByMinimumAverageRating(double minAverageRating)
+            throws NoSuchRecipeException {
+        List<Recipe> recipes = recipeRepo.findByAverageRatingGreaterThanEqual(minAverageRating);
+
+        if (recipes.isEmpty()) {
+            throw new NoSuchRecipeException("No recipes can be found with that minimum average rating.");
+        }
+
+        return recipes;
+    }
 }

@@ -87,4 +87,15 @@ public class RecipeController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/ratings/{avgRating}")
+    public ResponseEntity<?> getRecipesByAverageRating(
+            @PathVariable("avgRating") Double avgRating) {
+        try {
+            List<Recipe> recipes = recipeService.getRecipesByMinimumAverageRating(avgRating);
+            return ResponseEntity.ok(recipes);
+        } catch (NoSuchRecipeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

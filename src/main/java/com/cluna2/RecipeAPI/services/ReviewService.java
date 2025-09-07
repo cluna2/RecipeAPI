@@ -58,6 +58,7 @@ public class ReviewService {
             throws NoSuchRecipeException {
         Recipe recipe = recipeService.getRecipeById(recipeId);
         recipe.getReviews().add(review);
+        recipe.updateAverageRating();
         recipeService.updateRecipe(recipe, false);
         return recipe;
     }
