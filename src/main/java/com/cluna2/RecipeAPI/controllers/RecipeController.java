@@ -3,6 +3,7 @@ package com.cluna2.RecipeAPI.controllers;
 import com.cluna2.RecipeAPI.exceptions.NoSuchRecipeException;
 import com.cluna2.RecipeAPI.models.Recipe;
 import com.cluna2.RecipeAPI.services.RecipeService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -94,6 +95,19 @@ public class RecipeController {
         try {
             List<Recipe> recipes = recipeService.getRecipesByMinimumAverageRating(avgRating);
             return ResponseEntity.ok(recipes);
+        } catch (NoSuchRecipeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> getRecipeByNameAndMaxDifficultyRating(
+            @RequestParam(value = "maxDiff") int maxDifficulty,
+            @RequestParam(value = "name") String name) {
+        try {
+            List<Recipe> matchingRecipes = recipeService.
+                    getRecipesByNameAndMaxDifficultyRating(name, maxDifficulty);
+            return ResponseEntity.ok(matchingRecipes);
         } catch (NoSuchRecipeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

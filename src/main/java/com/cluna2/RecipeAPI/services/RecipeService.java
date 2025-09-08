@@ -100,4 +100,15 @@ public class RecipeService {
 
         return recipes;
     }
+
+
+    public List<Recipe> getRecipesByNameAndMaxDifficultyRating(String name, int maxDifficulty)
+        throws NoSuchRecipeException {
+        List<Recipe> recipes = recipeRepo.
+                findByNameContainingIgnoreCaseAndDifficultyRatingLessThanEqual(name, maxDifficulty);
+        if (recipes.isEmpty()) {
+            throw new NoSuchRecipeException("No recipes can be found with that name and that difficulty rating.");
+        }
+        return recipes;
+    }
 }

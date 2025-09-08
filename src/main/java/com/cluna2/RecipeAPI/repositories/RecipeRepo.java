@@ -10,4 +10,6 @@ public interface RecipeRepo extends JpaRepository<Recipe, Long> {
     List<Recipe> findByNameContainingIgnoreCase(String name);
 
     List<Recipe> findByAverageRatingGreaterThanEqual(double averageRating);
+
+    List<Recipe> findByNameContainingIgnoreCaseAndDifficultyRatingLessThanEqual(String name, int difficultyRating);
 }
