@@ -1,8 +1,7 @@
 package com.cluna2.RecipeAPI.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -18,8 +17,11 @@ public class Review {
     @GeneratedValue
     private Long id;
 
-    @NotNull
-    private String username;
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false)
+    // set to write only to prevent infinite regress in json output
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private User user;
 
     private int rating;
 

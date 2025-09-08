@@ -2,6 +2,7 @@ package com.cluna2.RecipeAPI.models;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -35,24 +36,31 @@ public class Recipe {
     @Column(nullable = false)
     private Integer difficultyRating;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @Column(nullable = false)
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @ManyToOne(cascade = CascadeType.ALL, optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false)
+    // set to write-only to prevent infinite regress in json output
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private User user;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id", nullable = false)
     @Builder.Default
     private List<Ingredient> ingredients = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id", nullable = false)
     @Builder.Default
     private List<Step> steps = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id", nullable = false)
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Double averageRating = 0.0;
 
     @Transient
     @JsonIgnore
@@ -73,6 +81,12 @@ public class Recipe {
         } else if (steps.size() == 0) {
             throw new IllegalStateException(
                     "You need at least one step for your recipe!");
+        } else if (difficultyRating == null) {
+            throw new IllegalStateException(
+                    "You need a difficulty rating for your recipe!");
+        } else if (user == null) {
+            throw new IllegalStateException(
+                    "A user must be provided.");
         }
     }
 

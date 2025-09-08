@@ -2,9 +2,13 @@ package com.cluna2.RecipeAPI.services;
 
 import com.cluna2.RecipeAPI.exceptions.NoSuchRecipeException;
 import com.cluna2.RecipeAPI.exceptions.NoSuchReviewException;
+import com.cluna2.RecipeAPI.exceptions.NoSuchUserException;
+import com.cluna2.RecipeAPI.exceptions.UserReviewException;
 import com.cluna2.RecipeAPI.models.Recipe;
 import com.cluna2.RecipeAPI.models.Review;
+import com.cluna2.RecipeAPI.models.User;
 import com.cluna2.RecipeAPI.repositories.ReviewRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +23,9 @@ public class ReviewService {
 
     @Autowired
     RecipeService recipeService;
+
+    @Autowired
+    UserService userService;
 
     public Review getReviewById(Long id) throws NoSuchReviewException {
         Optional<Review> review = reviewRepo.findById(id);
@@ -45,7 +52,7 @@ public class ReviewService {
 
     public List<Review> getReviewByUsername(String username)
             throws NoSuchReviewException {
-        List<Review> reviews = reviewRepo.findByUsername(username);
+        List<Review> reviews = reviewRepo.findByUser_Username(username);
 
         if (reviews.isEmpty()) {
             throw new NoSuchReviewException(
@@ -55,10 +62,15 @@ public class ReviewService {
     }
 
     public Recipe postNewReview(Review review, Long recipeId)
-            throws NoSuchRecipeException {
+            throws NoSuchRecipeException, UserReviewException, NoSuchUserException {
         Recipe recipe = recipeService.getRecipeById(recipeId);
+        User reviewUser = userService.getUserByUserName(review.getUser().getUsername());
+        if (recipe.getUser().getId().equals(reviewUser.getId())) {
+            throw new UserReviewException("You cannot post a review for your own posted recipe: " + recipe.getId());
+        }
         recipe.getReviews().add(review);
         recipe.updateAverageRating();
+        review.setUser(reviewUser);
         recipeService.updateRecipe(recipe, false);
         return recipe;
     }

@@ -1,7 +1,9 @@
 package com.cluna2.RecipeAPI.services;
 
 import com.cluna2.RecipeAPI.exceptions.NoSuchRecipeException;
+import com.cluna2.RecipeAPI.exceptions.NoSuchUserException;
 import com.cluna2.RecipeAPI.models.Recipe;
+import com.cluna2.RecipeAPI.models.User;
 import com.cluna2.RecipeAPI.repositories.RecipeRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,14 @@ public class RecipeService {
     @Autowired
     RecipeRepo recipeRepo;
 
+    @Autowired
+    UserService userService;
+
     @Transactional
-    public Recipe createNewRecipe(Recipe recipe) throws IllegalStateException{
+    public Recipe createNewRecipe(Recipe recipe) throws IllegalStateException, NoSuchUserException {
         recipe.validate();
+        User user = userService.getUserByUserName(recipe.getUser().getUsername());
+        recipe.setUser(user);
         recipe = recipeRepo.save(recipe);
         recipe.generateLocationURI();
         return recipe;
@@ -110,5 +117,16 @@ public class RecipeService {
             throw new NoSuchRecipeException("No recipes can be found with that name and that difficulty rating.");
         }
         return recipes;
+    }
+
+    public List<Recipe> getRecipesByUsername(String username)
+        throws NoSuchRecipeException {
+        List<Recipe> recipesFromUserName = recipeRepo.findByUser_Username(username);
+
+        if (recipesFromUserName.isEmpty()) {
+            throw new NoSuchRecipeException(String.format("No recipes can be found from user: %s", username));
+        }
+
+        return recipesFromUserName;
     }
 }
